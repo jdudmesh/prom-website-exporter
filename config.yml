@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 60s
+
+  external_labels:
+    monitor: 'remote'
+
+jobs:
+
+  - job_name: 'justthetalk-api'
+    static_configs:
+      - targets: ['https://api.justthetalk.com/health']
+
+  - job_name: 'justthetalk-ui'
+    static_configs:
+      - targets: ['https://beta.justthetalk.com/']
+
+  - job_name: 'justthetalk-legacy'
+    static_configs:
+      - targets: ['https://justthetalk.com/']
+
+  - job_name: 'notthetalk-legacy'
+    static_configs:
+      - targets: ['https://notthetalk.com/']
