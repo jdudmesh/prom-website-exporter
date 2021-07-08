@@ -34,17 +34,17 @@ func NewMetricsEngine(config *JobConfigFile) *MetricsEngine {
 	engine.httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "http_duration_seconds",
 		Help: "Duration of HTTP requests.",
-	}, []string{"job", "target"})
+	}, []string{"remote_job", "target"})
 
 	engine.httpStatus = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "http_request_count",
 		Help: "Count of HTTP requests",
-	}, []string{"job", "target", "status"})
+	}, []string{"remote_job", "target", "status"})
 
 	engine.internalError = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "job_error_count",
 		Help: "Count of errors running test",
-	}, []string{"job", "target"})
+	}, []string{"remote_job", "target"})
 
 	return engine
 
