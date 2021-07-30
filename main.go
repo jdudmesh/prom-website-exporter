@@ -8,7 +8,10 @@ import (
 
 	"flag"
 	"io/ioutil"
+	"os"
+	"os/signal"
 	"runtime/debug"
+	"syscall"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -17,12 +20,20 @@ import (
 
 func main() {
 
+	pidFile, err := os.Create("/var/run/prom-website-exporter.pid")
+	if err != nil {
+		log.Error("Unable to create PID file")
+		return
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			err := r.(error)
 			log.Errorf("Fatal error: %v", err)
 			debug.PrintStack()
 		}
+		pidFile.Close()
+		os.Remove(pidFile.Name())
 	}()
 
 	log.Info("Starting metrics engine")
@@ -47,7 +58,11 @@ func main() {
 	metricsEngine.Run()
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":9090", nil)
+	go http.ListenAndServe(":9090", nil)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
 
 	log.Info("Stopping metrics engine")
 	metricsEngine.Stop()
