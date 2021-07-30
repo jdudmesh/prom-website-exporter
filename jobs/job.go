@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -122,10 +123,19 @@ func (job *BasicJob) makeRequest(target string) int {
 		}
 	}()
 
-	resp, err := http.Get(target)
+	ctx, cancelFn := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelFn()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {
 		panic(err)
 	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
 	return resp.StatusCode
 
